@@ -1,0 +1,62 @@
+# Parareal Thermal Radiation Diffusion
+
+
+module PararealTRD
+
+include("TRD_Inputs.jl")
+include("TRD_Solvers.jl")
+include("TRD_Mesh.jl")
+include("TRD_Outputs.jl")
+
+
+
+function main(args)
+
+    println("Running Parareal Thermal Radiation Diffusion Simulation...")
+    
+    if isempty(args)
+        print("No input file provided, exiting... \n") # Exception if no input file is provided
+        return
+    else
+        input_file = args[1] # Use user provided input file
+    end
+
+    # Reading Input File
+    inputs = Inputs.readInputs(input_file)
+
+    # Generating Mesh Quantities
+    params = Mesh.mesh_generation(inputs)
+
+    # TRT Diffusion Solver Call
+
+    if uppercase(inputs["mode"]) == "SERIAL"
+        if params.ngroups > 1
+            #E_mg = zeros(params.nx, params.ngroups)
+            print("Running Serial Multi-Group TRT Diffusion Solver... \n")
+            params.E, params.E_m, params.T = Solvers.SerialTRTDiffusion_MG(params, inputs)
+        else
+            params.E, params.E_m, params.T = Solvers.SerialTRTDiffusion(params, inputs)
+        end
+    elseif uppercase(inputs["mode"]) == "PARAREAL"
+        if params.ngroups > 1
+            print("Running Parareal Multi-Group TRT Diffusion Solver... \n")
+            params.E, params.E_m, params.T = Solvers.PararealTRTDiffusion_MG(params, inputs, Threads.nthreads(), parse(Float64, inputs["epsilon"]))
+        else
+           params.E, params.E_m, params.T = Solvers.PararealTRTDiffusion(params, inputs, Threads.nthreads(), parse(Float64, inputs["epsilon"]))
+        end
+    else
+        print("Invalid mode specified in input file. Use 'SERIAL' or 'PARAREAL'. \n")
+        return
+    end
+
+    # Output Results
+    Outputs.plotting(params, inputs)
+   
+    println("Simulation complete.")
+
+end
+ 
+
+main(ARGS)
+
+end
