@@ -1,4 +1,6 @@
+name = MultiGroup
 mode = PARAREAL
+solver = DETERMINISTIC
 epsilon = 1e-12
 
 ngroups = 2
@@ -12,10 +14,12 @@ rho = 1.0
 cVmodel = LINEARIZED
 cV = 1.0
 sigma_a = [0.1818,1.818]
-T_src = [0, 0]
-T_init = 0.05
+T_src = [0.0, 0]
+Tm_init = 0.01
+Tr_init = 0.01
 S_regs = [0.5, 10]
 S_vals = [1.0,0.0]
 LBC = REFLECT
 RBC = MARSHAK
+N_coarse = 100
 output = ENERGY

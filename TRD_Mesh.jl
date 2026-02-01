@@ -30,22 +30,23 @@ module Mesh
 # end
 
 mutable struct Params
-    dx
-    dt
-    nx
-    nt
-    ngroups
-    c
-    a
-    T_src
-    T_init
-    x_nodes
-    x_centers
-    t
-    rho
-    cV
+    dx::Vector{Float64}
+    dt::Float64
+    nx::Int
+    nt::Int
+    ngroups::Int
+    c::Float64
+    a::Float64
+    T_src::Vector{Float64}
+    Tm_init::Float64
+    Tr_init::Float64
+    x_nodes::Vector{Float64}
+    x_centers::Vector{Float64}
+    t::Vector{Float64}
+    rho::Vector{Float64}
+    cV::Vector{Float64}
     sigma_a
-    beta
+    beta::Vector{Float64}
     f
     T
     D_centers
@@ -54,7 +55,54 @@ mutable struct Params
     E_m
     F
     S
+    N_coarse::Int
 end
+
+mutable struct ParamsMC
+    nx::Int
+    nt::Int
+    ngroups::Int
+    x_nodes::Vector{Float64}
+    dx::Vector{Float64}
+    x_centers::Vector{Float64}
+    t::Vector{Float64}
+    dt::Float64
+    Tm_init::Float64
+    Tr_init::Float64
+    c::Float64
+    a::Float64
+    T_src::Vector{Float64}
+    rho::Vector{Float64}
+    cV::Vector{Float64}
+    sigma_a::Vector{Float64}
+    beta::Vector{Float64}
+    f::Matrix{Float64}         
+    T::Matrix{Float64}
+    D_centers::Matrix{Float64}  
+    D_edges::Matrix{Float64}    
+    S::Matrix{Float64}
+    E_m::Matrix{Float64}
+    E::Matrix{Float64}
+    E_source::Matrix{Float64}
+    E_emitted::Matrix{Float64}
+    E_rad_tally::Vector{Float64}
+    E_mat_tally::Vector{Float64}
+    E_escaped::Float64
+    E_total::Vector{Float64}
+    F::Matrix{Float64}
+    f_plus::Vector{Float64}
+    f_minus::Vector{Float64}
+    P_plus::Vector{Float64}
+    P_minus::Vector{Float64}
+    P_c::Vector{Float64}
+    P_a::Vector{Float64}
+    matrix_diag::Vector{Float64}
+    N_source::Vector{Int64}
+    N_particles::Int
+    N_coarse::Int
+end
+
+
 
 function mesh_generation(inputs)
         """
@@ -88,11 +136,13 @@ function mesh_generation(inputs)
         else
             T_src = convert(Vector{Float64}, inputs["T_src"]) # Already an array from input parser
         end
-        T_init = parse(Float64, inputs["T_init"]) # Initial Temperature
-        rho = ones(nx) # Density
-        cV = ones(nx) # Specific Heat
+        Tm_init = parse(Float64, inputs["Tm_init"]) # Initial Material Temperature
+        Tr_init = parse(Float64, inputs["Tr_init"]) # Initial Radiation Temperature
+        rho = parse(Float64, inputs["rho"]) .* ones(nx) # Density
+        cV = parse(Float64, inputs["cV"]) .* ones(nx) # Specific Heat
        
         if ngroups > 1
+            E = (a*c*Tr_init^4)*ones(nx, nt+1, ngroups) # Radiation Energy
             S = zeros(nx, nt+1, ngroups) # Radiation Source
             sigma_a = ones(nx,ngroups) # Absorption Opacity
             for g in 1:ngroups
@@ -103,6 +153,7 @@ function mesh_generation(inputs)
             end
           
         else
+            E = (a*c*Tr_init^4)*ones(nx, nt+1) # Radiation Energy
             S = zeros(nx, nt+1) # Radiation Source
             sigma_a = ones(nx) * parse(Float64, inputs["sigma_a"]) 
             for i in 1:nt+1
@@ -111,12 +162,13 @@ function mesh_generation(inputs)
         end
         beta = ones(nx) # Radiation - Material Energy Coupling Coefficient 
         f = ones(nx, ngroups) # Fleck factor
-        T = T_init*ones(nx, nt+1) # Temperature
+        T = Tm_init*ones(nx, nt+1) # Temperature
         D_centers = ones(nx,ngroups)./(3*sigma_a) # Diffusion Coefficient - Cell Centered
         D_edges = ones(nx-1,ngroups) # Diffusion Coeffecient - Cell Edges
         E_m = zeros(nx, nt+1) # Material Energy
-        E = (a*c*T_init^4)*ones(nx, nt+1, ngroups) # Radiation Energy
+    
         F = zeros(nx+1, nt+1) # Radiation Flux
+        N_coarse = parse(Int64, inputs["N_coarse"]) # Coarse Time Step Factor
        
         #S = zeros(nx, nt+1, ngroups) # Radiation Source
         #S[1:25, :, :] .= 1.0 # Initial Source in first 50 cells
@@ -126,8 +178,27 @@ function mesh_generation(inputs)
         D_edges[:,:] = 2*dx[1:end-1].*(D_centers[1:end-1,:].*D_centers[2:end,:])./(dx[2:end].*D_centers[1:end-1,:] + dx[1:end-1].*D_centers[2:end,:])
 
 
-        params = Params(dx, dt, nx, nt, ngroups, c, a, T_src, T_init, x_nodes, x_centers, t, rho, cV, sigma_a, beta, f, T, D_centers, D_edges, E, E_m, F, S)
+        if uppercase(inputs["solver"]) == "DETERMINISTIC"
+            params = Params(dx, dt, nx, nt, ngroups, c, a, T_src, Tm_init, Tr_init, x_nodes, x_centers, t, rho, cV, sigma_a, beta, f, T, D_centers, D_edges, E, E_m, F, S, N_coarse)
+        elseif uppercase(inputs["solver"]) == "MC"
+            N_particles = parse(Int64, inputs["N_particles"]) # Number of MC Particles
+            E_source = zeros(nx, nt+1) # Radiation Energy Source
+            E_emitted = zeros(nx, nt+1) # Emitted Radiation Energy
+            E_rad_tally = zeros(nx) # Radiation Energy Tally
+            E_mat_tally = zeros(nx) # Material Energy Deposition Tally
+            E_escaped = 0.0 # Escaped Energy Tally
+            E_total = zeros(nt+1) # Total Energy in System
+            f_plus = zeros(nx) # Probability of moving right
+            f_minus = zeros(nx) # Probability of moving left
+            P_plus = zeros(nx) # Probability of moving right normalized
+            P_minus = zeros(nx) # Probability of moving left normalized
+            P_c = zeros(nx) # Probability of being colliding without absorbing normalized
+            P_a = zeros(nx) # Probability of being absorbed normalized
+            matrix_diag = zeros(nx) # Diagonal of matrix for implicit solve
+            N_source = zeros(Int64, nx) # Number of source particles per cell
 
+            params = ParamsMC(nx, nt, ngroups, x_nodes, dx, x_centers, t, dt, Tm_init, Tr_init, c, a, T_src, rho, cV, sigma_a, beta, f, T, D_centers, D_edges, S, E_m, E, E_source, E_emitted, E_rad_tally, E_mat_tally, E_escaped, E_total, F, f_plus, f_minus, P_plus, P_minus, P_c, P_a, matrix_diag, N_source, N_particles, N_coarse)
+        end
 
         return params
     end

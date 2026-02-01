@@ -1,0 +1,6 @@
+# Julia Output Files
+*.jld2
+
+# Temporary Files
+*.tmp
+*.bak

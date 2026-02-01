@@ -3,7 +3,9 @@
 module Outputs
 
 using Plots
+using LaTeXStrings
 using FFMPEG
+using JLD2
 
 include("TRD_Inputs.jl")
 
@@ -44,22 +46,25 @@ function plotting(params, inputs)
     end
 
     if output_quantity == "Temperature"
-        E_plot = E .^ (1/4) ./ a
+        E_plot = (max.(E,0) ./ a) .^ (1/4) 
         Emat_plot = T
     elseif output_quantity == "Energy Density"
-        E_plot = E / dx[1]
-        Emat_plot = (T .^4) / dx[1]
+        E_plot = E ./ dx
+        Emat_plot = (T .^4) ./ dx
     end
 
+    # Save the mesh and simulation variables to a JLD2 file
+    filename = "outputs\\" * inputs["name"] * "_" * titlecase(inputs["mode"]) * ".jld2"
+    jldsave(filename; x_centers, t, E_plot, Emat_plot)
+
     if params.ngroups == 1     
-        p1 = plot(x_centers, E_plot[:,end], title="$title1", xlabel="x", ylabel="T_r", minorgrid=:true, label="t = $(t[end])")
-        
+        p1 = plot(x_centers, E_plot[:,end],  xlabel=L"x", ylabel=L"T_r", minorgrid=:true, xscale=:log10, label="t = $(t[end])")
         if nt_available >= 1000
             plot!(x_centers, E_plot[:,1001], label="t = $(t[1001])")
         end
-        plot!(x_centers, E_plot[:,1], label="t = $(t[1])")
+        plot!(x_centers, E_plot[:,101], label="t = $(t[101])")
     else
-        p1 = plot(x_centers, E_plot[:,end,1], title="$title1", xlabel="x", ylabel="T_r", minorgrid=:true, label="t = $(t[end]) Group 1")
+        p1 = plot(x_centers, E_plot[:,end,1],  xlabel=L"x", ylabel=L"T_r", minorgrid=:true, label="t = $(t[end]) Group 1")
         plot!(x_centers, E_plot[:,end,2], label="t = $(t[end]) Group 2", linestyle=:dash)
 
         if nt_available >= 1000
@@ -71,13 +76,14 @@ function plotting(params, inputs)
     end
 
     display(p1)
-    p2 = plot(x_centers, Emat_plot[:,end], title="$title2", xlabel="x", ylabel="T_m", minorgrid=:true, label="t = $(t[end])")
+    p2 = plot(x_centers, Emat_plot[:,end],  xlabel=L"x", ylabel=L"T_m", xscale=:log10, yscale=:log10, minorgrid=:true, label="t = $(t[end])")
     
     # Add intermediate time points if they exist
     if nt_available >= 1000
         plot!(x_centers, Emat_plot[:,1001], label="t = $(t[1001])")
+        ylims!(p2, 0.003, 1.5)
     end
-    plot!(x_centers, Emat_plot[:,1], label="t = $(t[1])")
+    plot!(x_centers, Emat_plot[:,101], label="t = $(t[101])")
     display(p2)
     if uppercase(inputs["mode"]) == "SERIAL"
         savefig(p1, "outputs/TRT_Diffusion_RadTemp_Serial.png")

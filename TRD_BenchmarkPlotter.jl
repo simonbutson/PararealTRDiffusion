@@ -1,10 +1,14 @@
 using Plots
+using LaTeXStrings
+using JLD2
 
 # Su-Olson Benchmarks Thermal Radiation Diffusion Benchmark Plotter
 
 xMG = [0.0, 0.20, 0.40, 0.50, 0.60, 0.80, 1.00, 1.25, 1.50, 1.75, 2.00, 3.50, 5.0, 7.0, 9.0]
+xSO = [0.01000, 0.10000, 0.17783, 0.31623, 0.45000, 0.50000, 0.56234, 0.75000, 1.00000, 1.33352, 1.77828, 3.16228, 5.62341, 10.0000, 17.78279]
 
 tMG = [0.1, 0.3, 1.0, 3.0]
+tSO = [0.10000, 0.31623, 1.0000, 3.16228, 10.0000, 31.6228, 100.000]
 
 U1MG = [0.03873 0.08265 0.16857 0.30028;
       0.03649 0.07923 0.16426 0.29531;
@@ -54,7 +58,162 @@ VMG =  [0.00452 0.03326 0.20363 0.66656;
       0.00000 0.00000 0.00000 0.00036
       0.00000 0.00000 0.00000 0.00004]    
 
-    p = plot(xMG, U1MG[:,3], label="U1 at t="*string(tMG[3]), title="Multi-Group Thermal Radiation Diffusion Benchmark")
-    plot!(p, xMG, U2MG[:,3], label="U2 at t="*string(tMG[3]))
-    plot!(p, xMG, VMG[:,3], label="V at t="*string(tMG[3]))
-    display(p)
+USO = [0.09403 0.24356 0.50359 0.95968 1.86585 0.66600 0.35365
+      0.09326 0.24002 0.49716 0.95049 1.85424 0.66562 0.35360
+      0.09128 0.23207 0.48302 0.93036 1.82889 0.66479 0.35347
+      0.08230 0.20515 0.43743 0.86638 1.74866 0.66216 0.35309
+      0.06086 0.15981 0.36656 0.76956 1.62824 0.65824 0.35252
+      0.04766 0.13682 0.33271 0.72433 1.57237 0.65643 0.35225
+      0.03171 0.10856 0.29029 0.66672 1.50024 0.65392 0.35188
+      0.00755 0.05086 0.18879 0.51507 1.29758 0.64467 0.35051
+      0.00064 0.01583 0.10150 0.35810 1.06011 0.62857 0.34809
+      0.00000 0.00244 0.04060 0.21309 0.79696 0.60098 0.34382
+      0.00000 0.00000 0.01011 0.10047 0.52980 0.55504 0.33636
+      0.00000 0.00000 0.00003 0.00634 0.12187 0.37660 0.30185
+      0.00000 0.00000 0.00000 0.00000 0.00445 0.11582 0.21453
+      0.00000 0.00000 0.00000 0.00000 0.00000 0.00384 0.07351
+      0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00269
+]
+
+VSO = [0.00466 0.03816 0.21859 0.75342 1.75359 0.67926 0.35554
+      0.00464 0.03768 0.21565 0.74557 1.74218 0.67885 0.35548
+      0.00458 0.03658 0.20913 0.72837 1.71726 0.67796 0.35536
+      0.00424 0.03253 0.18765 0.67348 1.63837 0.67517 0.35497
+      0.00315 0.02476 0.15298 0.58978 1.51991 0.67100 0.35438
+      0.00234 0.02042 0.13590 0.55041 1.46494 0.66907 0.35411
+      0.00137 0.01515 0.11468 0.50052 1.39405 0.66640 0.35374
+      0.00023 0.00580 0.06746 0.37270 1.19584 0.65656 0.35235
+      0.00000 0.00139 0.03173 0.24661 0.96571 0.63947 0.34988
+      0.00000 0.00015 0.01063 0.13729 0.71412 0.61022 0.34555
+      0.00000 0.00000 0.00210 0.05918 0.46369 0.56166 0.33797
+      0.00000 0.00000 0.00000 0.00281 0.09834 0.37513 0.30294
+      0.00000 0.00000 0.00000 0.00000 0.00306 0.11060 0.21452
+      0.00000 0.00000 0.00000 0.00000 0.00000 0.00334 0.07269
+      0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00258
+]
+#  # Load Simulation Data from JLD2 file
+ filename = "outputs\\MultiGroup_Parareal.jld2"
+ @load filename x_centers t E_plot Emat_plot
+
+
+      # p = plot(x_centers, E_plot[:,end], label=L"T_r" * " at t="*string(t[end]), minorgrid=true)
+      # plot!(p, x_centers, E_plot[:,1001], label=L"T_r" * " at t="*string(t[1001]))
+      # plot!(p, x_centers, E_plot[:,101], label=L"T_r" * " at t="*string(t[101]))
+      # plot!(p, x_centers, E_plot[:,11], label=L"T_r" * " at t="*string(t[11]))
+      # plot!(p, x_centers, E_plot[:,1], label=L"T_r" * " at t="*string(t[1]))
+      # ylims!(p, 0.4, 1.1)
+
+      # display(p)
+
+      # savefig(p, "outputs\\Equilibrium_Parareal_RadiationTemperature.png")
+
+    p = scatter(xMG, U1MG[:,1], markershape=:xcross, minorgrid=true, label=false)
+    plot!(p, x_centers, E_plot[:,1001,1], label=L"U_1" * " at t="*string(t[1001]))
+    scatter!(p, xMG, U2MG[:,1], markershape=:xcross, label=false)
+    plot!(p, x_centers, E_plot[:,1001,2], label=L"U_2" * " at t="*string(t[1001]))
+    scatter!(p, xMG, U1MG[:,3], markershape=:xcross, label=false)
+    plot!(p, x_centers, E_plot[:,end,1], label=L"U_1" * " at t="*string(t[end]))
+    scatter!(p, xMG, U2MG[:,3], markershape=:xcross, label=false)
+    plot!(p, x_centers, E_plot[:,end,2], label=L"U_2" * " at t="*string(t[end]))
+    xlims!(p, 0, 8)
+    ylabel!(p, L"U_g")
+    xlabel!(p, L"x")
+
+    #savefig(p, "outputs\\MultiGroup_Parareal_RadiationEnergyDensity.png")
+  
+#     p = scatter(xSO[1:end-1], USO[1:end-1,1], markershape=:xcross, minorgrid=true, label=false)
+#     plot!(p, x_centers, E_plot[:,1001], label=L"U" * " at t="*string(t[1001]))
+#     scatter!(p, xSO[1:end-1], USO[1:end-1,3], markershape=:xcross, label=false)
+#     plot!(p, x_centers, E_plot[:,end], label=L"U" * " at t="*string(t[end]))
+#     ylabel!(p, L"U")
+#     xlabel!(p, L"x")
+#     xlims!(p, 0, 4)
+      display(p)
+
+#     savefig(p, "outputs\\SuOlson_Parareal_RadiationEnergyDensity.png")
+
+    #savefig(p, "outputs\\MultiGroup_Parareal_RadiationEnergyDensity.png")
+      # p2 = plot(x_centers, Emat_plot[:,end], label=L"T_m" * " at t="*string(t[end]), minorgrid=true)
+      # plot!(p2, x_centers, Emat_plot[:,1001], label=L"T_m" * " at t="*string(t[1001]))
+      # plot!(p2, x_centers, Emat_plot[:,101], label=L"T_m" * " at t="*string(t[101]))
+      # plot!(p2, x_centers, Emat_plot[:,11], label=L"T_m" * " at t="*string(t[11]))
+      # plot!(p2, x_centers, Emat_plot[:,1], label=L"T_m" * " at t="*string(t[1]))
+      # ylims!(p2, 0.4, 1.1)
+      # display(p2)
+      # savefig(p2, "outputs\\Equilibrium_Parareal_MaterialTemperature.png")
+
+
+    p2 = scatter(xMG, VMG[:,1], markershape=:xcross, minorgrid=true, xscale=:log10, yscale=:log10, label=false)
+    plot!(p2, x_centers, Emat_plot[:,1001], label=L"V" * " at t="*string(t[1001]))
+    scatter!(p2, xMG, VMG[:,3], markershape=:xcross, label=false)
+    plot!(p2, x_centers, Emat_plot[:,end], label=L"V" * " at t="*string(t[end]))
+    ylabel!(p2, L"V")
+    xlabel!(p2, L"x")
+    xlims!(p2, 1e-2, 6)
+    ylims!(p2, 1e-3, 2)
+    display(p2)
+
+#     p2 = scatter(xSO[1:end-1], VSO[1:end-1,1], markershape=:xcross, xscale=:log10, yscale=:log10, minorgrid=true, label=false)
+#     plot!(p2, x_centers, Emat_plot[:,1001], label=L"V" * " at t="*string(t[1001]))
+#     scatter!(p2, xSO[1:end-1], VSO[1:end-1,3], markershape=:xcross, label=false)
+#     plot!(p2, x_centers, Emat_plot[:,end], label=L"V" * " at t="*string(t[end]))
+#     ylabel!(p2, L"V")
+#     xlabel!(p2, L"x")
+#     ylims!(p2, 1e-3, 2)
+#     display(p2)
+
+#     savefig(p2, "outputs\\SuOlson_Parareal_MaterialEnergyDensity.png")
+
+    #savefig(p2, "outputs\\MultiGroup_Parareal_MaterialEnergyDensity.png")
+
+
+# Convergence Study Speed-Up Results
+
+N_p = [5,10,20,25,50,100]
+R = [10,20,50,100]
+
+S_eq = [1.00 0.909 1.17 1.06 1.22 1.31
+        0.952 1.25 1.54 1.47 1.85 2.13
+        1.11 1.35 1.72 2.00 2.63 3.13
+        1.18 1.28 1.64 1.96 2.70 3.70]
+
+
+S_so = [0.769 1.11 1.18 1.25 1.43 1.32
+        0.952 1.25 1.82 2.00 2.13 2.13
+        0.892 1.61 2.27 2.27 2.94 3.13
+        0.943 1.49 2.33 2.44 2.94 3.23]        
+
+S_mg = [0.625 0.769 1.00 1.06 1.06 1.15
+        0.645 1.05 1.33 1.47 1.85 1.89
+        0.746 1.16 1.72 2.00 2.63 3.13
+        0.787 1.12 1.82 2.17 2.94 3.70]   
+
+# p = plot(N_p, S_eq[1,   :], markershape=:circle ,label=L"R"*" = 10")
+# plot!(N_p, S_eq[2,:], markershape=:circle, label=L"R"*" = 20")
+# plot!(N_p, S_eq[3,:], markershape=:circle, label=L"R"*" = 50")
+# plot!(N_p, S_eq[4,:], markershape=:circle, label=L"R"*" = 100")
+# xlabel!(L"N_p")
+# ylabel!(L"S")
+
+# display(p)
+# savefig("outputs\\Speed_Up_Equilibrium.png")
+
+# p2 = plot(N_p, S_so[1,   :], markershape=:circle ,label=L"R"*" = 10")
+# plot!(N_p, S_so[2,:], markershape=:circle, label=L"R"*" = 20")
+# plot!(N_p, S_so[3,:], markershape=:circle, label=L"R"*" = 50")
+# plot!(N_p, S_so[4,:], markershape=:circle, label=L"R"*" = 100")
+# xlabel!(L"N_p")
+# ylabel!(L"S")
+
+# display(p2)
+# savefig("outputs\\Speed_Up_Gray_Su_Olson.png")
+
+# p3 = plot(N_p, S_mg[1,   :], markershape=:circle ,label=L"R"*" = 10")
+# plot!(N_p, S_mg[2,:], markershape=:circle, label=L"R"*" = 20")
+# plot!(N_p, S_mg[3,:], markershape=:circle, label=L"R"*" = 50")
+# plot!(N_p, S_mg[4,:], markershape=:circle, label=L"R"*" = 100")
+# xlabel!(L"N_p")
+# ylabel!(L"S")
+
+# display(p3)
+# savefig("outputs\\Speed_Up_Multi_Group.png")
