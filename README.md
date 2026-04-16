@@ -3,6 +3,7 @@
 This code package implements a 1D multigroup thermal radiation diffusion solver using the Parareal method. Options include deterministic, Monte Carlo, and hybrid implementations of the same solver.
 
 The deterministic solver has been validated and the example problems from the "Parareal Thermal Radiation Diffusion" paper can be recreated using the input decks in the paper-inputs section.
+Available problems in the inputs folder include material/radiation equilibration, a marshak wave, as well as gray and multigroup Su Olson benchmarks. \
 The Monte Carlo and hybrid implementations are still experimental and undergoing further development.
 
 The code can be called in the following way: \
@@ -11,9 +12,9 @@ where n_threads is an integer number of threads to run with and input_folder\fil
 
 ## Input Decks
 Here is a list of input deck keywords and available options: \
-name = String: gives the problem a name \
+name = String: give the problem a name \
 mode = SERIAL or PARAREAL: choose to run in serial or parareal mode \
-solver: DETERMINISTIC, MC, HYBRID: use a determinisitic, monte carlo or hybrid (deterministic coarse and MC fine) solver \ 
+solver: DETERMINISTIC, MC, HYBRID: use a determinisitic, monte carlo or hybrid (deterministic coarse and MC fine) solver \
 epsilon = Float: enter a floating point value for the absolute Parareal convergence tolerance \
 ngroups = Int: enter the number of energy groups \
 nx = Int: number of spatial cells \
