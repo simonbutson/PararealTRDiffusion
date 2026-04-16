@@ -1,9 +1,9 @@
 name = MarshakWave
 mode = PARAREAL
-solver = MC
+solver = HYBRID
 spectrum = GRAY
 
-epsilon = 1e-12
+epsilon = 1e-3
 
 ngroups = 1
 nx = 200
@@ -25,4 +25,5 @@ LBC = MARSHAK
 RBC = MARSHAK
 N_coarse = 50
 N_particles = 100000
+
 output = TEMPERATURE

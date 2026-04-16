@@ -1,5 +1,10 @@
 # Julia Output Files
 *.jld2
+*.outputs/TRT_Diffusion_MatTemp_Parallel.png
+*.outputs/TRT_Diffusion_MatTemp_Serial.png
+*.outputs/TRT_Diffusion_RadTemp_Serial.png
+*.outputs/TRT_Diffusion_RadTemp_Parallel.png
+*.outputs/TRT_Temperature_Iterations.gif
 
 # Temporary Files
 *.tmp

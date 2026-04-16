@@ -55,7 +55,7 @@ function main(args)
             print("Invalid mode specified in input file. Use 'SERIAL' or 'PARAREAL'. \n")
             return
         end
-    elseif uppercase(inputs["solver"]) == "MC"
+    elseif uppercase(inputs["solver"]) == "MC" || uppercase(inputs["solver"]) == "HYBRID"
         if uppercase(inputs["mode"]) == "SERIAL"
             print("Running Serial Monte Carlo TRT Diffusion Solver... \n")
             params.E, params.E_m, params.T = MonteCarlo.MC_Main(params, inputs)

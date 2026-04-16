@@ -180,7 +180,7 @@ function mesh_generation(inputs)
 
         if uppercase(inputs["solver"]) == "DETERMINISTIC"
             params = Params(dx, dt, nx, nt, ngroups, c, a, T_src, Tm_init, Tr_init, x_nodes, x_centers, t, rho, cV, sigma_a, beta, f, T, D_centers, D_edges, E, E_m, F, S, N_coarse)
-        elseif uppercase(inputs["solver"]) == "MC"
+        elseif uppercase(inputs["solver"]) == "MC" || uppercase(inputs["solver"]) == "HYBRID"
             N_particles = parse(Int64, inputs["N_particles"]) # Number of MC Particles
             E_source = zeros(nx, nt+1) # Radiation Energy Source
             E_emitted = zeros(nx, nt+1) # Emitted Radiation Energy
