@@ -1,7 +1,6 @@
 name = Equilibrium
 mode = PARAREAL
 solver = DETERMINISTIC
-spectrum = GRAY
 
 epsilon = 1e-12
 

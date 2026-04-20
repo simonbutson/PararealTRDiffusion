@@ -1,7 +1,6 @@
 name = MarshakWave
 mode = PARAREAL
 solver = HYBRID
-spectrum = GRAY
 
 epsilon = 1e-3
 

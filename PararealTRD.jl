@@ -32,7 +32,6 @@ function main(args)
         
         if uppercase(inputs["mode"]) == "SERIAL"
             if params.ngroups > 1
-                #E_mg = zeros(params.nx, params.ngroups)
                 print("Running Serial Multi-Group TRT Diffusion Solver... \n")
                 params.E, params.E_m, params.T = Solvers.SerialTRTDiffusion_MG(params, inputs)
             else

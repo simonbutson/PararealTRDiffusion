@@ -158,10 +158,6 @@ function PararealTRTDiffusion(params, inputs, threads, epsilon, E_ref, E_m_ref)
     for n in 1:N_coarse*threads+1
         S_coarse[:,n] .= S[:,1]
     end
-  
-
-    #print("Initial temperature check: ", T_init, "\n")
-    #print("Initial radiation energy check: ", E[:,1], "\n")
 
     coarse_params = Mesh.Params(dx, dt_coarse, nx, threads*N_coarse, 1, c, a, T_src, Tm_init, Tr_init, x_nodes, x_centers, t, rho, cV, sigma_a, beta, f, T_coarse, D_centers, D_edges, E_coarse, E_m_coarse, F_coarse, S_coarse, N_coarse)
 
@@ -203,14 +199,10 @@ function PararealTRTDiffusion(params, inputs, threads, epsilon, E_ref, E_m_ref)
             local_E_m[p][:,1] .= E_m_coarse[:,p]
             local_T[p][:,1] .= T_coarse[:,p]
 
-            #print("Thread ", Threads.threadid(), " starting chunk ", p, "\n")
-
             dl = zeros(nx-1)
             d = zeros(nx)
             du = zeros(nx-1)
             b = zeros(nx) # Source terms
-
-            #print("Thread ", Threads.threadid(), " working on chunk ", p, "\n")
 
             for n in 1:chunk_size
                 # Matrix assembly for TRT-Diffusion equations
@@ -267,11 +259,9 @@ function PararealTRTDiffusion(params, inputs, threads, epsilon, E_ref, E_m_ref)
         E_parallel[:,2:end] = hcat([local_E[p][:,2:end] for p in 1:threads]...)
         E_m_parallel[:,2:end] = hcat([local_E_m[p][:,2:end] for p in 1:threads]...)
         T_parallel[:,2:end] = hcat([local_T[p][:,2:end] for p in 1:threads]...)
-        #print(T_parallel[:,end].^4 /dx[1], "\n")
-        #sleep(10)
+
         # Step 2c: Perform prediction and correction step to update coarse solution with parallel fine solution
         for n in 2:threads+1
-            #coarse_params = (nx, N_coarse, dx, Tend/(threads*N_coarse), c, a, T_src, rho, cV, sigma_a, beta, f, hcat(T_coarse[:,n-1], zeros(nx, N_coarse)), D_centers, D_edges, hcat(E_m_coarse[:,n-1], zeros(nx, N_coarse)), hcat(E_coarse[:,n-1], zeros(nx, N_coarse)), F_coarse)
             coarse_params = Mesh.Params(dx, dt_coarse, nx, N_coarse, 1, c, a, T_src, Tm_init, Tr_init, x_nodes, x_centers, t, rho, cV, sigma_a, beta, f, hcat(T_coarse[:,n-1], zeros(nx, N_coarse)), D_centers, D_edges, hcat(E_coarse[:,n-1], zeros(nx, N_coarse)), hcat(E_m_coarse[:,n-1], zeros(nx, N_coarse)), F_coarse, S_coarse, N_coarse)
     
             E_coarse_new, E_m_coarse_new, T_coarse_new = SerialTRTDiffusion(coarse_params, inputs)
@@ -285,9 +275,6 @@ function PararealTRTDiffusion(params, inputs, threads, epsilon, E_ref, E_m_ref)
             T_coarse_old[:,n] .= T_coarse_new[:,end]
         end
 
-        #E_coarse .= E_coarse .+ (E_parallel[:,1:Int(chunk_size/N_coarse):end] .- E_coarse)
-        #E_m_coarse .= E_m_parallel[:,1:Int(chunk_size/N_coarse):end]
-        #T_coarse .= T_parallel[:,1:Int(chunk_size/N_coarse):end]
         iterations += 1
         new_E_error = maximum(abs.(E_ref - E_parallel))
         new_E_m_error = maximum(abs.(E_m_ref - E_m_parallel))
@@ -297,9 +284,6 @@ function PararealTRTDiffusion(params, inputs, threads, epsilon, E_ref, E_m_ref)
         push!(E_m_spectral_radii, new_E_m_error / old_E_m_error)
         old_E_error = new_E_error
         old_E_m_error = new_E_m_error
-        
-        #p = plot(x_centers, E_coarse[:,end].^(1/4)/a, title="Final Temperatures at Iteration $(iterations)", label= "Radiation Temperature", xlabel="x", ylabel="T_r", xscale=:log10, color=:red, minorgrid=:true)
-        #plot!(x_centers, T_coarse[:,end], label="Material Temperature", color=:blue, linestyle=:dash)
         p = plot(x_centers, abs.(mean!(ones(nx), E_ref-E_parallel)), title="Absolute Average Error at Iteration $(iterations)", label= "Radiation Energy", xlabel="x", ylabel="Absolute Average Change", yscale=:log10, color=:red, minorgrid=:true)
         plot!(x_centers, abs.(mean!(ones(nx), E_m_ref - E_m_parallel)), label="Material Energy", color=:blue, linestyle=:dash)
         ylims!(p, 1e-16, 1e1)
@@ -448,7 +432,6 @@ function PararealTRTDiffusion_MG(params, inputs, threads, epsilon, E_ref, E_m_re
         T_parallel[:,2:end] = hcat([local_T[p][:,2:end] for p in 1:threads]...)
         # Step 2c: Perform prediction and correction step to update coarse solution with parallel fine solution
         for n in 2:threads+1
-            #coarse_params = (nx, N_coarse, dx, Tend/(threads*N_coarse), c, a, T_src, rho, cV, sigma_a, beta, f, hcat(T_coarse[:,n-1], zeros(nx, N_coarse)), D_centers, D_edges, hcat(E_m_coarse[:,n-1], zeros(nx, N_coarse)), hcat(E_coarse[:,n-1], zeros(nx, N_coarse)), F_coarse)
             E_coarse_temp = zeros(nx, N_coarse+1, ngroups)
             E_coarse_temp[:,1,:] .= E_coarse[:,n-1,:]
             coarse_params = Mesh.Params(dx, dt_coarse, nx, N_coarse, ngroups, c, a, T_src, Tm_init, Tr_init, x_nodes, x_centers, t, rho, cV, sigma_a, beta, f, hcat(T_coarse[:,n-1], zeros(nx, N_coarse)), D_centers, D_edges, E_coarse_temp, hcat(E_m_coarse[:,n-1], zeros(nx, N_coarse)), F_coarse, S_coarse, N_coarse)
@@ -475,14 +458,6 @@ function PararealTRTDiffusion_MG(params, inputs, threads, epsilon, E_ref, E_m_re
             T_coarse_old[:,n] .= T_coarse_new[:,end]
         end
 
-        #E_coarse .= E_coarse .+ (E_parallel[:,1:Int(chunk_size/N_coarse):end] .- E_coarse)
-        #E_m_coarse .= E_m_parallel[:,1:Int(chunk_size/N_coarse):end]
-        #T_coarse .= T_parallel[:,1:Int(chunk_size/N_coarse):end]
-        
-        # for k in 1:threads
-        #     print(k , " ", sum(local_E[k][:,:,:]), " ", sum(local_E_m[k][:,:,:]), " ", sum(local_T[k][:,:,:]), "\n")
-        # end
-
         new_E_error = maximum(abs.(E_ref - E_parallel))
         new_E_m_error = maximum(abs.(E_m_ref - E_m_parallel))
         
@@ -492,8 +467,6 @@ function PararealTRTDiffusion_MG(params, inputs, threads, epsilon, E_ref, E_m_re
         push!(E_m_spectral_radii, new_E_m_error / old_E_m_error)
         old_E_error = new_E_error
         old_E_m_error = new_E_m_error
-        #p = plot(x_centers, E_coarse[:,end].^(1/4)/a, title="Final Temperatures at Iteration $(iterations)", label= "Radiation Temperature", xlabel="x", ylabel="T_r", xscale=:log10, color=:red, minorgrid=:true)
-        #plot!(x_centers, T_coarse[:,end], label="Material Temperature", color=:blue, linestyle=:dash)
         p = plot(x_centers, abs.(mean!(ones(nx), E_ref[:,:,1]-E_parallel[:,:,1])), title="Absolute Average Error at Iteration $(iterations)", label= "Radiation Energy Group 1", xlabel="x", ylabel="Absolute Average Change", yscale=:log10, color=:red, minorgrid=:true)
         for g in 2:ngroups
             plot!(x_centers, abs.(mean!(ones(nx), E_ref[:,:,g]-E_parallel[:,:,g])), label= "Radiation Energy Group $g", xlabel="x", ylabel="Absolute Average Change", yscale=:log10, color=:red, minorgrid=:true)

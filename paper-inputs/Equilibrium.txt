@@ -21,5 +21,5 @@ S_regs = [10]
 S_vals = [0.0]
 LBC = REFLECT
 RBC = REFLECT
-N_coarse = 10
+N_coarse = 100
 output = TEMPERATURE

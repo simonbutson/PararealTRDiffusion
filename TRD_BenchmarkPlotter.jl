@@ -93,7 +93,7 @@ VSO = [0.00466 0.03816 0.21859 0.75342 1.75359 0.67926 0.35554
       0.00000 0.00000 0.00000 0.00000 0.00000 0.00000 0.00258
 ]
 #  # Load Simulation Data from JLD2 file
- filename = "outputs\\SuOlson_Parareal.jld2"
+ filename = "outputs\\MultiGroup_Parareal.jld2"
  @load filename x_centers t E_plot Emat_plot
 
 
@@ -118,31 +118,37 @@ VSO = [0.00466 0.03816 0.21859 0.75342 1.75359 0.67926 0.35554
 
       # savefig(p, "outputs\\Equilibrium_Parareal_RadiationTemperature.png")
 
-#     p = scatter(xMG, U1MG[:,1], markershape=:circle, minorgrid=true, xscale =:log10, label=false, palette=:tol_bright)
-#     plot!(p, x_centers, E_plot[:,1001,1], label=L"U_1" * " at t="*string(t[1001]), linewidth=2.5)
-#     scatter!(p, xMG, U2MG[:,1], markershape=:rect, label=false)
-#     plot!(p, x_centers, E_plot[:,1001,2], label=L"U_2" * " at t="*string(t[1001]), linewidth=2.5)
-#     scatter!(p, xMG, U1MG[:,3], markershape=:diamond, label=false)
-#     plot!(p, x_centers, E_plot[:,end,1], label=L"U_1" * " at t="*string(t[end]), linewidth=2.5)
-#     scatter!(p, xMG, U2MG[:,3], markershape=:star, label=false)
-#     plot!(p, x_centers, E_plot[:,end,2], label=L"U_2" * " at t="*string(t[end]), linewidth=2.5)
-#     xlims!(p, 1e-1, 10)
-#     ylabel!(p, L"U_g")
-#     xlabel!(p, L"x")
-#     display(p)
+      p = scatter(xMG, U1MG[:,1], markershape=:circle, minorgrid=true, xscale =:log10, label=false, palette=:tol_bright, color=1)
+      plot!(p, x_centers, E_plot[:,1001,1], label=false, linewidth=2.5, color=1)
+      scatter!(p, xMG, U2MG[:,1], markershape=:rect, label=false, color=2)
+      plot!(p, x_centers, E_plot[:,1001,2], label=false, linewidth=2.5, color=2)
+      scatter!(p, xMG, U1MG[:,3], markershape=:diamond, label=false, color=3)
+      plot!(p, x_centers, E_plot[:,end,1], label=false, linewidth=2.5, color=3)
+      scatter!(p, xMG, U2MG[:,3], markershape=:star, label=false, color=4)
+      plot!(p, x_centers, E_plot[:,end,2], label=false, linewidth=2.5, color=4)
+      plot!(p, [NaN], [NaN], label=L"U_1" * " at t="*string(t[1001]), linewidth=2.5, markershape=:circle, color=1)
+      plot!(p, [NaN], [NaN], label=L"U_2" * " at t="*string(t[1001]), linewidth=2.5, markershape=:rect, color=2)
+      plot!(p, [NaN], [NaN], label=L"U_1" * " at t="*string(t[end]), linewidth=2.5, markershape=:diamond, color=3)
+      plot!(p, [NaN], [NaN], label=L"U_2" * " at t="*string(t[end]), linewidth=2.5, markershape=:star, color=4)
+    xlims!(p, 1e-1, 10)
+    ylabel!(p, L"U_g")
+    xlabel!(p, L"x")
+    display(p)
 
-#     savefig(p, "outputs\\MultiGroup_Parareal_RadiationEnergyDensity.png")
+    savefig(p, "outputs\\MultiGroup_Parareal_RadiationEnergyDensity.png")
   
-#     p = scatter(xSO[1:end-1], USO[1:end-1,1], markershape=:rect, minorgrid=true, xscale=:log10, label=false, palette=:tol_bright)
-#     plot!(p, x_centers, E_plot[:,1001], label=L"U" * " at t="*string(t[1001]), linewidth=2.5)
-#     scatter!(p, xSO[1:end-1], USO[1:end-1,3], markershape=:diamond, label=false)
-#     plot!(p, x_centers, E_plot[:,end], label=L"U" * " at t="*string(t[end]), linewidth=2.5)
+#       p = scatter(xSO[1:end-1], USO[1:end-1,1], markershape=:rect, minorgrid=true, xscale=:log10, label=false, palette=:tol_bright, color=1)
+#       plot!(p, x_centers, E_plot[:,1001], label=false, linewidth=2.5, color=1)
+#       scatter!(p, xSO[1:end-1], USO[1:end-1,3], markershape=:diamond, label=false, color=2)
+#       plot!(p, x_centers, E_plot[:,end], label=false, linewidth=2.5, color=2)
+#       plot!(p, [NaN], [NaN], label=L"U" * " at t="*string(t[1001]), linewidth=2.5, markershape=:rect, color=1)
+#       plot!(p, [NaN], [NaN], label=L"U" * " at t="*string(t[end]), linewidth=2.5, markershape=:diamond, color=2)
 #     ylabel!(p, L"U")
 #     xlabel!(p, L"x")
 #     #xlims!(p, 1e-3, 10)
 #     display(p)
 
-      #savefig(p, "outputs\\SuOlson_Parareal_RadiationEnergyDensity.png")
+#       savefig(p, "outputs\\SuOlson_Parareal_RadiationEnergyDensity.png")
 
       # p2 = plot(x_centers, Emat_plot[:,end], label=L"T_m" * " at t="*string(t[end]), minorgrid=true)
       # plot!(p2, x_centers, Emat_plot[:,1001], label=L"T_m" * " at t="*string(t[1001]))
@@ -154,28 +160,32 @@ VSO = [0.00466 0.03816 0.21859 0.75342 1.75359 0.67926 0.35554
       # savefig(p2, "outputs\\Equilibrium_Parareal_MaterialTemperature.png")
 
 
-#     p2 = scatter(xMG, VMG[:,1], markershape=:rect, minorgrid=true, xscale=:log10, yscale=:log10, label=false, palette=:tol_bright)
-#     plot!(p2, x_centers, Emat_plot[:,1001], label=L"V" * " at t="*string(t[1001]), linewidth=2.5)
-#     scatter!(p2, xMG, VMG[:,3], markershape=:diamond, label=false)
-#     plot!(p2, x_centers, Emat_plot[:,end], label=L"V" * " at t="*string(t[end]), linewidth=2.5)
-#     ylabel!(p2, L"V")
-#     xlabel!(p2, L"x")
-#     xlims!(p2, 1e-1, 6)
-#     ylims!(p2, 1e-3, 2)
-#     display(p2)
-
-#savefig(p2, "outputs\\MultiGroup_Parareal_MaterialEnergyDensity.png")
-
-    p2 = scatter(xSO[1:end-1], VSO[1:end-1,1], markershape=:rect, xscale=:log10, yscale=:log10, minorgrid=true, label=false, palette=:tol_bright)
-    plot!(p2, x_centers, Emat_plot[:,1001], label=L"V" * " at t="*string(t[1001]), linewidth=2.5)
-    scatter!(p2, xSO[1:end-1], VSO[1:end-1,3], markershape=:diamond, label=false)
-    plot!(p2, x_centers, Emat_plot[:,end], label=L"V" * " at t="*string(t[end]), linewidth=2.5)
+      p2 = scatter(xMG, VMG[:,1], markershape=:rect, minorgrid=true, xscale=:log10, yscale=:log10, label=false, palette=:tol_bright, color=1)
+      plot!(p2, x_centers, Emat_plot[:,1001], label=false, linewidth=2.5, color=1)
+      scatter!(p2, xMG, VMG[:,3], markershape=:diamond, label=false, color=2)
+      plot!(p2, x_centers, Emat_plot[:,end], label=false, linewidth=2.5, color=2)
+      plot!(p2, [NaN], [NaN], label=L"V" * " at t="*string(t[1001]), linewidth=2.5, markershape=:rect, color=1)
+      plot!(p2, [NaN], [NaN], label=L"V" * " at t="*string(t[end]), linewidth=2.5, markershape=:diamond, color=2)
     ylabel!(p2, L"V")
     xlabel!(p2, L"x")
+    xlims!(p2, 1e-1, 6)
     ylims!(p2, 1e-3, 2)
     display(p2)
 
-    savefig(p2, "outputs\\SuOlson_Parareal_MaterialEnergyDensity.png")
+savefig(p2, "outputs\\MultiGroup_Parareal_MaterialEnergyDensity.png")
+
+#       p2 = scatter(xSO[1:end-1], VSO[1:end-1,1] ,markershape=:rect, xscale=:log10, yscale=:log10, minorgrid=true, label=false, palette=:tol_bright, color=1)
+#       plot!(p2, x_centers, Emat_plot[:,1001], label=false, linewidth=2.5, color=1)
+#       scatter!(p2, xSO[1:end-1], VSO[1:end-1,3], markershape=:diamond, label=false, color=2)
+#       plot!(p2, x_centers, Emat_plot[:,end], label=false, linewidth=2.5, color=2)
+#       plot!(p2, [NaN], [NaN], label=L"V" * " at t="*string(t[1001]), linewidth=2.5, markershape=:rect, color=1)
+#       plot!(p2, [NaN], [NaN], label=L"V" * " at t="*string(t[end]), linewidth=2.5, markershape=:diamond, color=2)
+#     ylabel!(p2, L"V")
+#     xlabel!(p2, L"x")
+#     ylims!(p2, 1e-3, 2)
+#     display(p2)
+
+#     savefig(p2, "outputs\\SuOlson_Parareal_MaterialEnergyDensity.png")
 
     
 
